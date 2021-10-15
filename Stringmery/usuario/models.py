@@ -1,13 +1,14 @@
 from django.db import models
 
-class pedido (models.Model):
+
+class usuario (models.Model):
 
 
     nombre= models.CharField(max_length=50)
     dirs = models.CharField(max_length=50)
     login = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
-    estado = models.CharField(max_length=50)
+    documento = models.FloatField(null= True, blank= True , default = None)
 
 
 

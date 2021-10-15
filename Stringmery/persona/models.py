@@ -1,13 +1,13 @@
 from django.db import models
 
-class pedido (models.Model):
+class persona (models.Model):
+
 
 
     nombre= models.CharField(max_length=50)
-    dirs = models.CharField(max_length=50)
+    direccion = models.CharField(max_length=50)
     login = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
-    estado = models.CharField(max_length=50)
 
 
 
