@@ -11,3 +11,4 @@ class Pedido(models.Model):
         return '%s %s' % (self.peso, self.volumen)
         return '{}'.format(self.name)
 # Create your models here.
+
