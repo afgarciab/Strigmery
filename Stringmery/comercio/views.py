@@ -19,7 +19,7 @@ def comercios_view(request):
             return HttpResponse(comercios_dto, 'application/json')
 
     if request.method == 'POST':
-        comercio = vl.create_variable(json.loads(request.body))
+        comercio = vl.create_comercio(json.loads(request.body))
         comercio_dto = serializers.serialize('json', [comercio,])
         return HttpResponse(comercio_dto, 'application/json')
 

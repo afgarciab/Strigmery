@@ -14,7 +14,7 @@ def update_comercio(var_pk, new_var):
     comercio.save()
     return comercio
 
-def create_variable(var):
+def create_comercio(var):
     comercioo = comercio(name=var["name"])
     comercioo.save()
     return comercioo
