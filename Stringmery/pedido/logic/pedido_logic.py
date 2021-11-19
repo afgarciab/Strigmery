@@ -13,4 +13,4 @@ def get_pedido(id):
 def create_pedido(form):
     pedido = form.save()
     pedido.save()
-    return pedido
+    return ()

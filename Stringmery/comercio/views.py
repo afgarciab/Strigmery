@@ -1,37 +1,48 @@
-from .logic import comercio_logic as vl
-from django.http import HttpResponse
-from django.core import serializers
-import json
-from django.views.decorators.csrf import csrf_exempt
+
+
+
+
+from django.shortcuts import render
+from .forms import comercioForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .logic.comercio_logic import create_comercio, get_comercios, get_comercio
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-@csrf_exempt
-def comercios_view(request):
-    if request.method =='GET':
-        id = request.GET.get("id", None)
-        if id:
-            comercio = vl.get_comercio(id)
-            comercio_dto = serializers.serialize('json', [comercio,])
-            return HttpResponse( comercio_dto, 'application/json')
-        else:
-            comercios = vl.get_comercios()
-            comercios_dto = serializers.serialize('json', comercios)
-            return HttpResponse(comercios_dto, 'application/json')
 
+@login_required
+def comercio_list(request):
+    comercios = get_comercios()
+    context = {
+        'comercio_list': comercios
+    }
+    return render(request, 'comercio/comercios.html', context)
+
+def comercio_create(request):
     if request.method == 'POST':
-        comercio = vl.create_comercio(json.loads(request.body))
-        comercio_dto = serializers.serialize('json', [comercio,])
-        return HttpResponse(comercio_dto, 'application/json')
+        form = comercioForm(request.POST)
+        if form.is_valid():
+            create_comercio(form)
+            messages.add_message(request, messages.SUCCESS, 'comercio create successful')
+            return HttpResponseRedirect(reverse('comercioCreate'))
+        else:
+            print(form.errors)
+    else:
+        form = comercioForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'comercio/comercioCreate.html', context)
 
 
-@csrf_exempt
-def comercio_view(request, pk):
-    if request.method == 'GET':
-        comercio_dto = vl.get_comercio(pk)
-        comercio = serializers.serialize('json', [comercio_dto,])
-        return HttpResponse(comercio, 'application/json')
-
-    if request.method == 'PUT':
-        comercio_dto = vl.update_comercio(pk, json.loads(request.body))
-        comercio = serializers.serialize('json', [comercio_dto,])
-        return HttpResponse(comercio, 'application/json')
+@login_required
+def single_comercio(request, id=0):
+    comercio = get_comercio(id)
+    context = {
+        'comercio': comercio
+    }
+    return render(request, 'comercio/comercio.html', context)

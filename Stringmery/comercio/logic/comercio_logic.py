@@ -4,17 +4,11 @@ def get_comercios():
     comercios = comercio.objects.all()
     return comercios
 
-def get_comercio(var_pk):
-    comercioo = comercio.objects.get(pk=var_pk)
+def get_comercio(id):
+    comercioo = comercio.objects.raw("SELECT * FROM comercios_comercio WHERE id=%s" % id)[0]
     return comercioo
 
-def update_comercio(var_pk, new_var):
-    comercio = get_comercio(var_pk)
-    comercio.name = new_var["name"]
-    comercio.save()
-    return comercio
-
-def create_comercio(var):
-    comercioo = comercio(name=var["name"])
+def create_comercio(form):
+    comercioo = form.save()
     comercioo.save()
-    return comercioo
+    return ()
