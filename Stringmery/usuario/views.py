@@ -4,34 +4,49 @@ from django.core import serializers
 import json
 from django.views.decorators.csrf import csrf_exempt
 
+
+
+from django.shortcuts import render
+from .forms import usuarioForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .logic.usuario_logic import create_usuario, get_usuarios, get_usuario
+from django.contrib.auth.decorators import login_required
+
 # Create your views here.
-@csrf_exempt
-def usuarios_view(request):
-    if request.method =='GET':
-        id = request.GET.get("id", None)
-        if id:
-            usuario = vl.get_usuario(id)
-            usuario_dto = serializers.serialize('json', [usuario,])
-            return HttpResponse( usuario_dto, 'application/json')
-        else:
-            usuarios = vl.get_usuarios()
-            usuarios_dto = serializers.serialize('json', usuarios)
-            return HttpResponse(usuarios_dto, 'application/json')
 
+@login_required
+def usuario_list(request):
+    usuarios = get_usuarios()
+    context = {
+        'usuario_list': usuarios
+    }
+    return render(request, 'usuario/usuarios.html', context)
+
+def usuario_create(request):
     if request.method == 'POST':
-        usuario = vl.create_usuario(json.loads(request.body))
-        usuario_dto = serializers.serialize('json', [usuario,])
-        return HttpResponse(usuario_dto, 'application/json')
+        form = usuarioForm(request.POST)
+        if form.is_valid():
+            create_usuario(form)
+            messages.add_message(request, messages.SUCCESS, 'usuario create successful')
+            return HttpResponseRedirect(reverse('usuarioCreate'))
+        else:
+            print(form.errors)
+    else:
+        form = usuarioForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'usuario/usuarioCreate.html', context)
 
 
-@csrf_exempt
-def usuario_view(request, pk):
-    if request.method == 'GET':
-        usuario_dto = vl.get_usuario(pk)
-        usuario = serializers.serialize('json', [usuario_dto,])
-        return HttpResponse(usuario, 'application/json')
-
-    if request.method == 'PUT':
-        usuario_dto = vl.update_usuario(pk, json.loads(request.body))
-        usuario = serializers.serialize('json', [usuario_dto,])
-        return HttpResponse(usuario, 'application/json')
+@login_required
+def single_usuario(request, id=0):
+    usuario = get_usuario(id)
+    context = {
+        'usuario': usuario
+    }
+    return render(request, 'usuario/usuario.html', context)

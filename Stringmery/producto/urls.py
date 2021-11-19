@@ -1,7 +1,11 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
+from django.views.decorators.csrf import csrf_exempt
+from django.conf.urls import include
+
 urlpatterns = [
-    path('', views.productos_view, name='productos_view'),
-    path('<int:pk>', views.producto_view, name = 'producto_view'),
+    path('productos/', views.producto_list, name='productoList'),
+    path('producto/<id>', views.single_producto, name='singleProducto'),
+    path('productocreate/', csrf_exempt(views.producto_create), name='productoCreate'),
 ]

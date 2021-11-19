@@ -1,43 +1,47 @@
-from .logic import producto_logic as vl
-from django.http import HttpResponse
-from django.core import serializers
-import json
-from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
+from .forms import ProductoForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .logic.producto_logic import create_producto, get_productos, get_producto
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-@csrf_exempt
-def productos_view(request):
-    if request.method == 'GET':
-        id = request.GET.get("id", None)
-        if id:
-            producto = vl.get_producto(id)
-            producto_dto = serializers.serialize('json', [producto, ])
-            return HttpResponse(producto_dto, 'application/json')
-        else:
-            productos = vl.get_productos()
-            productos_dto = serializers.serialize('json', productos)
-            return HttpResponse(productos_dto, 'application/json')
 
+@login_required
+def producto_list(request):
+    productos = get_productos()
+    context = {
+        'producto_list': productos
+    }
+    return render(request, 'producto/productos.html', context)
+
+def producto_create(request):
     if request.method == 'POST':
-        producto = vl.create_producto(json.loads(request.body))
-        producto_dto = serializers.serialize('json', [producto, ])
-        return HttpResponse(producto_dto, 'application/json')
+        form = ProductoForm(request.POST)
+        if form.is_valid():
+            create_producto(form)
+            messages.add_message(request, messages.SUCCESS, 'producto create successful')
+            return HttpResponseRedirect(reverse('productoCreate'))
+        else:
+            print(form.errors)
+    else:
+        form =ProductoForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'producto/productoCreate.html', context)
 
 
-@csrf_exempt
-def producto_view(request, pk):
-    if request.method == 'GET':
-        producto_dto = vl.get_producto(pk)
-        producto = serializers.serialize('json', [producto_dto, ])
-        return HttpResponse(producto, 'application/json')
-
-    if request.method == 'PUT':
-        producto_dto = vl.update_producto(pk, json.loads(request.body))
-        producto = serializers.serialize('json', [producto_dto, ])
-        return HttpResponse(producto, 'application/json')
-
-
+@login_required
+def single_producto(request, id=0):
+    producto = get_producto(id)
+    context = {
+        'producto': producto
+    }
+    return render(request, 'producto/producto.html', context)
 
 
 

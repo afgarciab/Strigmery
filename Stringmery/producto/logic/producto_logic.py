@@ -4,17 +4,11 @@ def get_productos():
     producto = Producto.objects.all()
     return producto
 
-def get_producto(var_pk):
-    producto = Producto.objects.get(pk=var_pk)
+def get_producto(id):
+    producto = Producto.objects.raw("SELECT * FROM  productos_producto WHERE id=%s" % id)[0]
     return producto
 
-def update_producto(var_pk, new_var):
-    producto = get_producto(var_pk)
-    producto.name = new_var["name"]
+def create_producto(form):
+    producto = form.save()
     producto.save()
-    return producto
-
-def create_producto(var):
-    producto = Producto(name=var["name"])
-    producto.save()
-    return producto
+    return ()
