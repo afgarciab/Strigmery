@@ -1,39 +1,47 @@
+
+
+
 from django.shortcuts import render
-from .logic import pedido_logic as vl
-from django.http import HttpResponse
-from django.core import serializers
-import json
-from django.views.decorators.csrf import csrf_exempt
+from .forms import PedidoForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .logic.pedido_logic import create_pedido, get_pedidos, get_pedido
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-@csrf_exempt
-def pedidos_view(request):
-    if request.method =='GET':
-        id = request.GET.get("id", None)
-        if id:
-            pedido = vl.get_pedido(id)
-            pedido_dto = serializers.serialize('json', [pedido,])
-            return HttpResponse( pedido_dto, 'application/json')
-        else:
-            pedidos = vl.get_pedidos()
-            pedidos_dto = serializers.serialize('json', pedidos)
-            return HttpResponse(pedidos_dto, 'application/json')
 
+@login_required
+def pedido_list(request):
+    pedidos = get_pedidos()
+    context = {
+        'pedido_list': pedidos
+    }
+    return render(request, 'pedido/pedidos.html', context)
+
+def pedido_create(request):
     if request.method == 'POST':
-        pedido = vl.create_pedido(json.loads(request.body))
-        pedido_dto = serializers.serialize('json', [pedido,])
-        return HttpResponse(pedido_dto, 'application/json')
+        form = PedidoForm(request.POST)
+        if form.is_valid():
+            create_pedido(form)
+            messages.add_message(request, messages.SUCCESS, 'pedido create successful')
+            return HttpResponseRedirect(reverse('pedidoCreate'))
+        else:
+            print(form.errors)
+    else:
+        form =PedidoForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'pedido/pedidoCreate.html', context)
 
 
-@csrf_exempt
-def pedido_view(request, pk):
-    if request.method == 'GET':
-        pedido_dto = vl.get_pedido(pk)
-        pedido = serializers.serialize('json', [pedido_dto,])
-        return HttpResponse(pedido, 'application/json')
-
-    if request.method == 'PUT':
-        pedido_dto = vl.update_pedido(pk, json.loads(request.body))
-        pedido = serializers.serialize('json', [pedido_dto,])
-        return HttpResponse(pedido, 'application/json')
-# Create your views here.
+@login_required
+def single_pedido(request, id=0):
+    pedido = get_pedido(id)
+    context = {
+        'pedido': pedido
+    }
+    return render(request, 'pedido/pedido.html', context)

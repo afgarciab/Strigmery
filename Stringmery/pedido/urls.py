@@ -1,7 +1,11 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
+from django.views.decorators.csrf import csrf_exempt
+from django.conf.urls import include
+
 urlpatterns = [
-    path('', views.pedidos_view, name='pedidos_view'),
-    path('<int:pk>', views.pedido_view, name = 'pedido_view'),
+    path('pedidos/', views.pedido_list, name='pedidoList'),
+    path('pedido/<id>', views.single_pedido, name='singlePedido'),
+    path('pedidocreate/', csrf_exempt(views.pedido_create), name='pedidoCreate'),
 ]

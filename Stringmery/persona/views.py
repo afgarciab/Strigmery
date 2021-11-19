@@ -1,37 +1,44 @@
-from .logic import persona_logic as vl
-from django.http import HttpResponse
-from django.core import serializers
-import json
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from .forms import personaForm
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .logic.persona_logic import create_persona, get_personas, get_persona
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-@csrf_exempt
-def personas_view(request):
-    if request.method =='GET':
-        id = request.GET.get("id", None)
-        if id:
-            persona = vl.get_persona(id)
-            persona_dto = serializers.serialize('json', [persona,])
-            return HttpResponse( persona_dto, 'application/json')
-        else:
-            personas = vl.get_personas()
-            personas_dto = serializers.serialize('json', personas)
-            return HttpResponse(personas_dto, 'application/json')
 
+@login_required
+def persona_list(request):
+    personas = get_personas()
+    context = {
+        'persona_list': personas
+    }
+    return render(request, 'persona/personas.html', context)
+
+def persona_create(request):
     if request.method == 'POST':
-        persona = vl.create_persona(json.loads(request.body))
-        persona_dto = serializers.serialize('json', [persona,])
-        return HttpResponse(persona_dto, 'application/json')
+        form = personaForm(request.POST)
+        if form.is_valid():
+            create_persona(form)
+            messages.add_message(request, messages.SUCCESS, 'persona create successful')
+            return HttpResponseRedirect(reverse('personaCreate'))
+        else:
+            print(form.errors)
+    else:
+        form = personaForm()
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'persona/personaCreate.html', context)
 
 
-@csrf_exempt
-def persona_view(request, pk):
-    if request.method == 'GET':
-        persona_dto = vl.get_persona(pk)
-        persona = serializers.serialize('json', [persona_dto,])
-        return HttpResponse(persona, 'application/json')
-
-    if request.method == 'PUT':
-        persona_dto = vl.update_persona(pk, json.loads(request.body))
-        persona = serializers.serialize('json', [persona_dto,])
-        return HttpResponse(persona, 'application/json')
+@login_required
+def single_persona(request, id=0):
+    persona = get_persona(id)
+    context = {
+        'persona': persona
+    }
+    return render(request, 'persona/persona.html', context)

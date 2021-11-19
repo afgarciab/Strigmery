@@ -4,17 +4,11 @@ def get_personas():
     personas = persona.objects.all()
     return personas
 
-def get_persona(var_pk):
-    personaa= persona.objects.get(pk=var_pk)
+def get_persona(id):
+    personaa= persona.objects.raw("SELECT * FROM personas_persona WHERE id=%s" % id)[0]
     return personaa
 
-def update_persona(var_pk, new_var):
-    persona = get_persona(var_pk)
-    persona.name = new_var["name"]
-    persona.save()
-    return persona
-
-def create_variable(var):
-    personaa = persona(name=var["name"])
+def create_persona(form):
+    personaa = form.save()
     personaa.save()
-    return personaa
+    return ()
